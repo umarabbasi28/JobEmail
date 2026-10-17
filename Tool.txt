@@ -1,0 +1,77 @@
+Tool
+
+Build a local web app using Python and Streamlit (or FastAPI + HTML/Tailwind) that allows me to upload a daily QA job circular PDF, parse all job postings, and match them against my two master resumes: one for "Automation QA" and one for "Manual QA".
+
+### 1. Requirements & Architecture
+- **Language & Tech Stack**: Python 3.10+, Streamlit (or local lightweight web UI), PyPDF/pdfplumber, and Google Gemini API (`google-genai`) or OpenAI API (`openai`).
+- **Resumes**: 
+  - Provide a configuration/settings section or local files (`resumes/automation_resume.txt` and `resumes/manual_resume.txt`) where I can paste my master resume contents once.
+  - The UI should also let me inspect or update these two resumes directly from the interface.
+- **Input**: A drag-and-drop file uploader for the daily PDF (e.g., "3-6 Years - QA Jobs.pdf").
+
+### 2. Processing Pipeline
+1. Extract full plain text from all pages of the uploaded PDF using `pypdf` or `pdfplumber`.
+2. Send the extracted text alongside both resumes to the LLM with a strict prompt to:
+   - Identify discrete job postings (Company, Role, Experience, Location, Key Skills, and HR Contact Email).
+   - Ignore administrative emails (e.g., publisher disclaimers like "swtestingstudio@gmail.com").
+   - Calculate two match scores (0-100%) for each listing: one against the Automation Resume and one against the Manual Resume.
+   - Categorize listings into two buckets: "Automation QA Matches" and "Manual QA Matches".
+   - Discard postings with < 50% match score.
+   - Sort each category in descending order by Match Score (Highest to Lowest).
+3. The LLM must return structured JSON matching this schema:
+   ```json
+   {
+     "automation_matches": [
+       {
+         "match_score": 95,
+         "company": "Soliteck",
+         "role": "Automation QA Engineer",
+         "experience": "4-5 Yrs",
+         "location": "Remote / Pune",
+         "hr_email": "devyani.patil@soliteck.com",
+         "key_matching_skills": ["Python", "Playwright", "CI/CD", "API Testing"],
+         "reasoning": "Strong match with Playwright and API automation background."
+       }
+     ],
+     "manual_matches": [
+       {
+         "match_score": 90,
+         "company": "Accel Growth",
+         "role": "QA Analyst",
+         "experience": "3-4 Yrs",
+         "location": "Remote",
+         "hr_email": "kiruthika.b@accelgrowthtech.com",
+         "key_matching_skills": ["STLC", "Jira", "Postman", "Regression Testing"],
+         "reasoning": "High alignment on functional testing and defect management."
+       }
+     ]
+   }
+
+
+3. User Interface & Usability Requirements
+Split results into two tabs or side-by-side columns: "Automation QA Matches" and "Manual QA Matches".
+
+Display each set in an interactive, clean table or card view.
+
+For each row, include:
+
+Match Score (highlighted / badge)
+
+Company & Role
+
+Location & Experience
+
+Key Matching Skills (tags)
+
+HR Email with a one-click "Copy" button and a direct mailto: link (e.g., clicking it opens an email client with pre-filled subject: "Application for [Role] - Mohd Umar Abbasi").
+
+Add an "Export to CSV" button for both tables so I can save my daily tracked applications.
+
+4. Implementation Details to Provide
+requirements.txt with all necessary dependencies.
+
+.env.example file for the API key (GEMINI_API_KEY or OPENAI_API_KEY).
+
+Complete, well-structured app.py with error handling (e.g., handling empty PDFs, API timeouts, or unparsed pages).
+
+Run instructions in a README.md.
